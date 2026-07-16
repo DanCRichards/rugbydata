@@ -119,11 +119,21 @@ export class Repository {
     const playerById = new Map(players.map((p) => [p.id, p]));
     const teamById = new Map(teams.map((t) => [t.id, t]));
 
-    const matchCounts = new Map<string, number>();
-    for (const r of records) matchCounts.set(r.subjectId, (matchCounts.get(r.subjectId) ?? 0) + 1);
+    // Count DISTINCT matches per subject. Records may be split by provenance
+    // source (one row per source per match), so a naive row count would
+    // over-report; a subject's match count is the number of unique match ids.
+    const matchesBySubject = new Map<string, Set<string>>();
+    for (const r of records) {
+      let set = matchesBySubject.get(r.subjectId);
+      if (!set) {
+        set = new Set();
+        matchesBySubject.set(r.subjectId, set);
+      }
+      set.add(r.matchId);
+    }
 
     const subjects: CohortSubject[] = [];
-    for (const subjectId of matchCounts.keys()) {
+    for (const subjectId of matchesBySubject.keys()) {
       if (entityKind === "PLAYER") {
         const p = playerById.get(subjectId);
         const position = (p?.position ?? null) as PositionCode | null;
@@ -136,7 +146,7 @@ export class Repository {
           teamId: p?.teamId ?? "",
           position,
           positionGroup,
-          matchCount: matchCounts.get(subjectId)!,
+          matchCount: matchesBySubject.get(subjectId)!.size,
         });
       } else {
         const t = teamById.get(subjectId);
@@ -146,7 +156,7 @@ export class Repository {
           teamId: subjectId,
           position: null,
           positionGroup: null,
-          matchCount: matchCounts.get(subjectId)!,
+          matchCount: matchesBySubject.get(subjectId)!.size,
         });
       }
     }

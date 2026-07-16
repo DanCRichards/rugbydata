@@ -35,7 +35,13 @@ export const DENOMINATOR_FIELDS = {
 } as const;
 
 export const MatchStatRecord = z.object({
-  /** Deterministic id: `${entityKind}:${subjectId}:${matchId}` — enables idempotent upserts. */
+  /**
+   * Deterministic id enabling idempotent upserts. Base form
+   * `${entityKind}:${subjectId}:${matchId}`; when a subject's match data is split
+   * across provenance sources, the source is appended
+   * (`${entityKind}:${subjectId}:${matchId}:${source}`) so per-source rows do not
+   * collide. Distinct-match counting keys on matchId, not the full id.
+   */
   id: z.string().min(1),
   entityKind: EntityKind,
   /** Player id or Team id depending on entityKind. */

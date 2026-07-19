@@ -1,0 +1,850 @@
+<style>
+  /* ============================ RuckMetrics — design tokens ============================ */
+  .rm {
+    /* Chrome & ink (validated data-viz chrome set), light theme */
+    --plane: #f4f5f2;
+    --surface: #fcfcfb;
+    --surface-2: #eff0ec;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --border-strong: rgba(11, 11, 11, 0.18);
+    /* Brand accent — deep pitch green, used sparingly for active/interactive state */
+    --accent: #12683d;
+    --accent-ink: #ffffff;
+    --accent-soft: rgba(18, 104, 61, 0.10);
+    /* Categorical: forwards / backs (validated all-pairs, light) */
+    --forwards: #2a78d6;
+    --backs: #eb6834;
+    --team: #12683d;
+    --bench: #6b6a65;
+    --good: #0ca30c;
+    --warn: #b8791b;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .rm {
+      --plane: #0d0d0d;
+      --surface: #1a1a19;
+      --surface-2: #232321;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255, 255, 255, 0.10);
+      --border-strong: rgba(255, 255, 255, 0.20);
+      --accent: #2e9d5c;
+      --accent-ink: #06130b;
+      --accent-soft: rgba(46, 157, 92, 0.14);
+      --forwards: #3987e5;
+      --backs: #d95926;
+      --team: #2e9d5c;
+      --bench: #9d9c96;
+      --good: #0ca30c;
+      --warn: #e0a63a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] .rm {
+    --plane: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #232321;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.20);
+    --accent: #2e9d5c;
+    --accent-ink: #06130b;
+    --accent-soft: rgba(46, 157, 92, 0.14);
+    --forwards: #3987e5;
+    --backs: #d95926;
+    --team: #2e9d5c;
+    --bench: #9d9c96;
+    --warn: #e0a63a;
+    color-scheme: dark;
+  }
+
+  .rm {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--plane);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  .rm * { box-sizing: border-box; }
+  .rm h1, .rm h2, .rm h3 { margin: 0; text-wrap: balance; }
+
+  /* ---------- Header ---------- */
+  .rm-header {
+    padding: 20px clamp(16px, 3vw, 32px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    align-items: baseline;
+    justify-content: space-between;
+    background: var(--surface);
+  }
+  .rm-brand { display: flex; align-items: baseline; gap: 12px; }
+  .rm-mark {
+    font-weight: 800; font-size: 22px; letter-spacing: -0.02em;
+    display: inline-flex; align-items: center; gap: 9px;
+  }
+  .rm-mark::before {
+    content: ""; width: 13px; height: 13px; border-radius: 3px;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .rm-tag { color: var(--ink-2); font-size: 13.5px; max-width: 60ch; }
+  .rm-realnote {
+    font-size: 11.5px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.06em; display: flex; align-items: center; gap: 6px;
+  }
+  .rm-realnote::before {
+    content: ""; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--good);
+  }
+
+  /* ---------- Layout ---------- */
+  .rm-main {
+    display: grid;
+    grid-template-columns: 312px minmax(0, 1fr);
+    gap: 1px;
+    background: var(--border);
+    align-items: stretch;
+  }
+  @media (max-width: 860px) { .rm-main { grid-template-columns: 1fr; } }
+
+  .rm-rail {
+    background: var(--surface);
+    padding: 18px clamp(14px, 1.6vw, 20px) 28px;
+    display: flex; flex-direction: column; gap: 18px;
+    max-height: calc(100vh - 86px);
+    overflow-y: auto;
+  }
+  @media (max-width: 860px) { .rm-rail { max-height: none; } }
+
+  .rm-canvas {
+    background: var(--surface);
+    padding: clamp(16px, 2.2vw, 28px);
+    display: flex; flex-direction: column; gap: 14px;
+    min-width: 0;
+  }
+
+  /* ---------- Controls ---------- */
+  .rm-group { display: flex; flex-direction: column; gap: 8px; }
+  .rm-legend-lbl, .rm-field > label {
+    font-size: 11px; font-weight: 650; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--muted);
+  }
+  .rm-field { display: flex; flex-direction: column; gap: 5px; }
+  .rm-field select, .rm-field .rm-fake {
+    width: 100%; padding: 8px 10px; font: inherit; font-size: 13px;
+    color: var(--ink); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 7px;
+    appearance: none; cursor: pointer;
+  }
+  .rm-field select:focus-visible, .rm button:focus-visible, .rm-chip:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  .rm-seg { display: flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
+  .rm-seg button {
+    flex: 1; padding: 7px 8px; font: inherit; font-size: 12.5px; font-weight: 600;
+    border: 0; border-radius: 6px; background: transparent; color: var(--ink-2); cursor: pointer;
+  }
+  .rm-seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+  .rm-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .rm-switch {
+    position: relative; width: 40px; height: 22px; border-radius: 999px;
+    background: var(--baseline); border: 0; cursor: pointer; flex: none; transition: background .15s;
+  }
+  .rm-switch[aria-pressed="true"] { background: var(--accent); }
+  .rm-switch::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+    border-radius: 50%; background: #fff; transition: transform .15s;
+  }
+  .rm-switch[aria-pressed="true"]::after { transform: translateX(18px); }
+  .rm-toggle span { font-size: 13px; color: var(--ink); }
+
+  .rm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rm-chip {
+    padding: 5px 9px; font: inherit; font-size: 12px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-2); cursor: pointer;
+  }
+  .rm-chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 600; }
+
+  .rm-flips { display: flex; gap: 8px; }
+  .rm-flips label { flex: 1; display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink); cursor: pointer; padding: 6px 8px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 7px; }
+
+  .rm-save {
+    margin-top: 2px; padding: 9px; font: inherit; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer;
+  }
+  .rm-save:hover { background: var(--surface-2); }
+
+  .rm-avail { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-left: 6px; letter-spacing: .04em; }
+
+  /* ---------- Chart head ---------- */
+  .rm-charthead { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; justify-content: space-between; }
+  .rm-title { font-size: 19px; font-weight: 750; letter-spacing: -0.01em; }
+  .rm-specref { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 2px 7px; border-radius: 5px; letter-spacing: .04em; }
+  .rm-sub { font-size: 13px; color: var(--ink-2); width: 100%; max-width: 74ch; }
+
+  .rm-warn {
+    display: flex; gap: 9px; align-items: flex-start;
+    background: color-mix(in srgb, var(--warn) 12%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+    border-radius: 8px; padding: 9px 12px; font-size: 12.5px; color: var(--ink);
+  }
+  .rm-warn.info { background: var(--surface-2); border-color: var(--border); color: var(--ink-2); }
+  .rm-warn b { color: var(--ink); }
+
+  .rm-plot { position: relative; width: 100%; }
+  .rm-plot svg { width: 100%; height: auto; display: block; }
+  .rm-empty {
+    display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center;
+    text-align: center; padding: 48px 24px; min-height: 320px;
+    border: 1px dashed var(--border-strong); border-radius: 12px; color: var(--ink-2);
+  }
+  .rm-empty .big { font-size: 15px; font-weight: 650; color: var(--ink); }
+  .rm-empty .lock { font-size: 26px; }
+
+  .rm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 12.5px; }
+  .rm-legend .li { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+  .rm-swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  .rm-swatch.bench { width: 16px; height: 0; border-top: 2px dashed var(--bench); border-radius: 0; }
+
+  /* ---------- Tooltip ---------- */
+  .rm-tip {
+    position: absolute; pointer-events: none; z-index: 5; opacity: 0; transform: translate(-50%, -112%);
+    background: var(--ink); color: var(--surface); padding: 7px 9px; border-radius: 7px;
+    font-size: 12px; line-height: 1.35; white-space: nowrap;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25); transition: opacity .1s;
+  }
+  .rm-tip .n { font-weight: 700; }
+  .rm-tip .m { opacity: .82; font-variant-numeric: tabular-nums; }
+  .rm-dot { transition: r .1s; cursor: pointer; }
+
+  /* ---------- Footer ---------- */
+  .rm-foot {
+    border-top: 1px solid var(--border); background: var(--surface);
+    padding: 14px clamp(16px, 3vw, 32px); display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center;
+  }
+  .rm-foot h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 650; }
+  .rm-fresh { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .rm-fresh .src { display: inline-flex; align-items: center; gap: 6px; }
+  .rm-fresh .src b { color: var(--ink); font-weight: 600; }
+  .rm-prov { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+
+  @media (prefers-reduced-motion: reduce) { .rm * { transition: none !important; } }
+</style>
+
+<div class="rm" id="rm-app">
+  <header class="rm-header">
+    <div class="rm-brand">
+      <span class="rm-mark">RuckMetrics</span>
+      <span class="rm-tag">One bivariate engine. Pick any two metrics, filter, rank by positional percentile, overlay a benchmark. Every named analysis is a preset — not a page.</span>
+    </div>
+    <span class="rm-realnote" id="rm-realnote">Live computed data</span>
+  </header>
+
+  <div class="rm-main">
+    <aside class="rm-rail" id="rm-rail"><!-- controls injected --></aside>
+    <section class="rm-canvas">
+      <div class="rm-charthead">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span class="rm-title" id="rm-title">—</span>
+          <span class="rm-specref" id="rm-specref" hidden></span>
+        </div>
+      </div>
+      <div class="rm-sub" id="rm-sub"></div>
+      <div id="rm-warnings"></div>
+      <div class="rm-plot" id="rm-plot"><div class="rm-tip" id="rm-tip"></div></div>
+      <div class="rm-legend" id="rm-legend"></div>
+    </section>
+  </div>
+
+  <footer class="rm-foot">
+    <h3>Data freshness</h3>
+    <div class="rm-fresh" id="rm-fresh"></div>
+  </footer>
+</div>
+
+<script id="rm-data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("rm-data").textContent);
+  var METRIC = {};
+  DATA.metrics.forEach(function (m) { METRIC[m.id] = m; });
+
+  var FORWARD_GROUPS = { frontRow: 1, locks: 1, looseForwards: 1 };
+  var GROUP_LABEL = {
+    frontRow: "Front row", locks: "Locks", looseForwards: "Loose forwards",
+    scrumHalf: "Scrum-half", flyHalf: "Fly-half", centres: "Centres", backThree: "Back three"
+  };
+  var GROUP_ORDER = ["frontRow", "locks", "looseForwards", "scrumHalf", "flyHalf", "centres", "backThree"];
+  var COMP_LABEL = { URC: "United Rugby Championship", SUPER_RUGBY: "Super Rugby", NATIONS_CHAMPIONSHIP: "Nations Championship", TEST_MATCH: "Test match" };
+
+  function broadOf(g) { return g && FORWARD_GROUPS[g] ? "forwards" : "backs"; }
+  function isAvailable(id) { var m = METRIC[id]; return m && m.availability !== "PAID_UNAVAILABLE"; }
+  function cohortFor(def) {
+    return DATA.cohorts.find(function (c) {
+      return c.scope === def.scope && c.competition === def.competition && c.season === def.season;
+    }) || DATA.cohorts.find(function (c) { return c.scope === def.scope; });
+  }
+  function metricsForScope(scope) { return DATA.metrics.filter(function (m) { return m.scope === scope; }); }
+  function fmt(v) {
+    if (v == null || isNaN(v)) return "—";
+    var a = Math.abs(v);
+    return (a >= 100 ? v.toFixed(0) : a >= 10 ? v.toFixed(1) : v.toFixed(2)).replace(/\.0+$/, "");
+  }
+  function median(arr) {
+    if (!arr.length) return null;
+    var s = arr.slice().sort(function (a, b) { return a - b; });
+    var m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  }
+
+  /* ------------------------------ state ------------------------------ */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var state = clone(DATA.presets[0].definition);
+  var activePreset = DATA.presets[0];
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  /* --------------------------- computation --------------------------- */
+  // Mirrors the backend computeChart: same availability gate, same transparent
+  // exclusion (never imputation), same benchmark-median overlay.
+  function compute(def) {
+    var warnings = [];
+    var required = def.chartType === "radar" || def.chartType === "groupedBar" ? def.categoryMetrics
+      : def.chartType === "stackedBar" ? def.stackMetrics
+      : def.yMetric ? [def.xMetric, def.yMetric] : [def.xMetric];
+    var unavailable = required.filter(function (id) { return !isAvailable(id); });
+    if (unavailable.length) {
+      unavailable.forEach(function (id) {
+        warnings.push((METRIC[id] ? METRIC[id].label : id) + " requires a paid data provider (Opta/Sportradar) and is not yet available — this preset is wired and waiting on a paid feed.");
+      });
+      return { empty: true, paid: true, warnings: warnings };
+    }
+    var cohort = cohortFor(def);
+    if (!cohort) return { empty: true, warnings: ["No data for this scope."] };
+    var usePct = def.percentileMode === "positional";
+
+    // position filter (players)
+    var subjects = cohort.subjects;
+    if (def.scope === "PLAYER_CLUB") {
+      var groups = (def.positionFilter && def.positionFilter.groups) || [];
+      var broad = def.positionFilter && def.positionFilter.broad;
+      if (groups.length || broad) {
+        subjects = subjects.filter(function (s) {
+          if (!s.positionGroup) return false;
+          var inG = !groups.length || groups.indexOf(s.positionGroup) >= 0;
+          var inB = !broad || broadOf(s.positionGroup) === broad;
+          return inG && inB;
+        });
+      }
+    }
+    function valMap(id) { var v = cohort.values[id]; return v ? (usePct ? v.pct : v.raw) : {}; }
+    return {
+      empty: false, warnings: warnings, cohort: cohort, subjects: subjects,
+      usePct: usePct, valMap: valMap, def: def
+    };
+  }
+
+  /* ----------------------------- render ----------------------------- */
+  var plot = document.getElementById("rm-plot");
+  var tip = document.getElementById("rm-tip");
+
+  function axisLabel(id, pct) {
+    var m = METRIC[id]; if (!m) return id;
+    if (pct) return m.label + " — positional percentile";
+    return m.label + (m.unit && m.unit !== "count" && m.unit !== "index" && m.unit !== "ratio" ? " (" + m.unit + ")" : "");
+  }
+
+  function render() {
+    var def = state;
+    document.getElementById("rm-title").textContent = activePreset ? activePreset.name : "Custom view";
+    var sref = document.getElementById("rm-specref");
+    if (activePreset && activePreset.specRef) { sref.hidden = false; sref.textContent = activePreset.specRef; }
+    else sref.hidden = true;
+    document.getElementById("rm-sub").textContent = activePreset ? activePreset.description : describeDef(def);
+
+    var res = compute(def);
+    var warnBox = document.getElementById("rm-warnings");
+    warnBox.innerHTML = "";
+    var legend = document.getElementById("rm-legend");
+    legend.innerHTML = "";
+    // clear plot but keep tooltip node
+    Array.prototype.slice.call(plot.children).forEach(function (c) { if (c !== tip) plot.removeChild(c); });
+
+    if (res.empty) {
+      renderEmpty(res);
+      res.warnings.forEach(function (w) { addWarn(warnBox, w, res.paid ? false : true); });
+      return;
+    }
+
+    var svg;
+    if (def.chartType === "radar" || def.chartType === "groupedBar") svg = drawRadar(res);
+    else if (def.chartType === "stackedBar") svg = drawBars(res);
+    else svg = drawScatter(res); // scatter + strip
+    plot.insertBefore(svg, tip);
+
+    res.warnings.forEach(function (w) { addWarn(warnBox, w, true); });
+    if (res.pointsShown === 0 && !res.warnings.length) addWarn(warnBox, "No subjects have data for this combination.", true);
+  }
+
+  function describeDef(d) {
+    var x = METRIC[d.xMetric] ? METRIC[d.xMetric].label : d.xMetric;
+    var y = d.yMetric && METRIC[d.yMetric] ? METRIC[d.yMetric].label : null;
+    return y ? (x + " vs " + y + " · " + COMP_LABEL[d.competition]) : (x + " · " + COMP_LABEL[d.competition]);
+  }
+
+  function addWarn(box, text, info) {
+    var d = document.createElement("div");
+    d.className = "rm-warn" + (info ? " info" : "");
+    d.innerHTML = (info ? "" : "<b>Paid metric&nbsp;</b>") + escapeHtml(text);
+    box.appendChild(d);
+  }
+  function renderEmpty(res) {
+    var d = document.createElement("div");
+    d.className = "rm-empty";
+    d.innerHTML = res.paid
+      ? '<div class="lock">🔒</div><div class="big">Wired for a paid data feed</div><div>This analysis is registered and slotted, but the metric needs an Opta / Sportradar event feed. The axis is disabled until that adapter drops in — no downstream code changes required.</div>'
+      : '<div class="big">No data</div><div>' + escapeHtml(res.warnings[0] || "") + "</div>";
+    plot.insertBefore(d, tip);
+  }
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function svgEl(w, h) {
+    var s = document.createElementNS(SVGNS, "svg");
+    s.setAttribute("viewBox", "0 0 " + w + " " + h);
+    s.setAttribute("role", "img");
+    return s;
+  }
+  function el(name, attrs) {
+    var e = document.createElementNS(SVGNS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function cssv(n) { return getComputedStyle(document.getElementById("rm-app")).getPropertyValue(n).trim(); }
+  function niceExtent(vals) {
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if (min === max) { min -= 1; max += 1; }
+    var pad = (max - min) * 0.08;
+    return [min - pad, max + pad];
+  }
+  function ticks(min, max, n) {
+    var span = max - min, step = Math.pow(10, Math.floor(Math.log10(span / n)));
+    var err = (span / n) / step;
+    if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+    var out = [], t = Math.ceil(min / step) * step;
+    for (; t <= max + 1e-9; t += step) out.push(Math.round(t * 1e6) / 1e6);
+    return out;
+  }
+
+  /* ------------------------------ SCATTER / STRIP ------------------------------ */
+  function drawScatter(res) {
+    var def = res.def, strip = def.chartType === "strip";
+    var W = 780, H = strip ? 320 : 500, m = { t: 18, r: 22, b: 56, l: 66 };
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    var xm = res.valMap(def.xMetric), ym = strip ? null : res.valMap(def.yMetric);
+    var sizeM = def.sizeMetric ? res.valMap(def.sizeMetric) : null;
+
+    var pts = [], exclX = 0, exclY = 0;
+    res.subjects.forEach(function (s) {
+      var xv = xm[s.subjectId];
+      if (xv == null) { exclX++; return; }
+      var yv = 0;
+      if (!strip) { yv = ym[s.subjectId]; if (yv == null) { exclY++; return; } }
+      pts.push({ s: s, x: xv, y: yv, size: sizeM ? sizeM[s.subjectId] : null });
+    });
+    res.pointsShown = pts.length;
+    if (exclX) res.warnings.push(exclX + " excluded — no " + METRIC[def.xMetric].label + " data.");
+    if (exclY) res.warnings.push(exclY + " excluded — no " + METRIC[def.yMetric].label + " data.");
+
+    var svg = svgEl(W, H);
+    if (!pts.length) return svg;
+
+    var pctX = res.usePct, pctY = res.usePct;
+    var xdom = pctX ? [0, 100] : niceExtent(pts.map(function (p) { return p.x; }));
+    var ydom = strip ? [0, 1] : (pctY ? [0, 100] : niceExtent(pts.map(function (p) { return p.y; })));
+    if (def.axisFlips.x) xdom = [xdom[1], xdom[0]];
+    if (!strip && def.axisFlips.y) ydom = [ydom[1], ydom[0]];
+    function sx(v) { return m.l + (v - xdom[0]) / (xdom[1] - xdom[0]) * pw; }
+    function sy(v) { return m.t + ph - (v - ydom[0]) / (ydom[1] - ydom[0]) * ph; }
+
+    var grid = cssv("--grid"), base = cssv("--baseline"), muted = cssv("--muted"), surface = cssv("--surface");
+
+    // gridlines + ticks
+    var xt = ticks(Math.min(xdom[0], xdom[1]), Math.max(xdom[0], xdom[1]), 6);
+    xt.forEach(function (t) {
+      var x = sx(t);
+      svg.appendChild(el("line", { x1: x, y1: m.t, x2: x, y2: m.t + ph, stroke: grid, "stroke-width": 1 }));
+      var lb = el("text", { x: x, y: m.t + ph + 18, fill: muted, "font-size": 11, "text-anchor": "middle" });
+      lb.textContent = fmt(t); lb.style.fontVariantNumeric = "tabular-nums"; svg.appendChild(lb);
+    });
+    if (!strip) {
+      var yt = ticks(Math.min(ydom[0], ydom[1]), Math.max(ydom[0], ydom[1]), 6);
+      yt.forEach(function (t) {
+        var y = sy(t);
+        svg.appendChild(el("line", { x1: m.l, y1: y, x2: m.l + pw, y2: y, stroke: grid, "stroke-width": 1 }));
+        var lb = el("text", { x: m.l - 10, y: y + 4, fill: muted, "font-size": 11, "text-anchor": "end" });
+        lb.textContent = fmt(t); lb.style.fontVariantNumeric = "tabular-nums"; svg.appendChild(lb);
+      });
+    }
+    // axes
+    svg.appendChild(el("line", { x1: m.l, y1: m.t + ph, x2: m.l + pw, y2: m.t + ph, stroke: base, "stroke-width": 1.5 }));
+    svg.appendChild(el("line", { x1: m.l, y1: m.t, x2: m.l, y2: m.t + ph, stroke: base, "stroke-width": 1.5 }));
+
+    // benchmark median crosshair
+    if (def.benchmarkOverlay && def.benchmarkOverlay !== "none") {
+      var bx = median(pts.map(function (p) { return p.x; }));
+      var by = strip ? null : median(pts.map(function (p) { return p.y; }));
+      var bench = cssv("--bench");
+      if (bx != null) svg.appendChild(el("line", { x1: sx(bx), y1: m.t, x2: sx(bx), y2: m.t + ph, stroke: bench, "stroke-width": 1.5, "stroke-dasharray": "5 4" }));
+      if (by != null) svg.appendChild(el("line", { x1: m.l, y1: sy(by), x2: m.l + pw, y2: sy(by), stroke: bench, "stroke-width": 1.5, "stroke-dasharray": "5 4" }));
+    }
+
+    // size scale
+    var rMin = 5, rMax = 15;
+    var sizeVals = sizeM ? pts.map(function (p) { return p.size; }).filter(function (v) { return v != null; }) : [];
+    var sMin = sizeVals.length ? Math.min.apply(null, sizeVals) : 0, sMax = sizeVals.length ? Math.max.apply(null, sizeVals) : 1;
+    function rad(v) { if (v == null || sMax === sMin) return 7; return rMin + (v - sMin) / (sMax - sMin) * (rMax - rMin); }
+
+    var team = res.def.scope === "TEAM_TEST";
+    var cF = cssv("--forwards"), cB = cssv("--backs"), cT = cssv("--team");
+    // strip jitter baseline
+    pts.forEach(function (p, i) {
+      var px = sx(p.x);
+      var py = strip ? (m.t + ph / 2 + ((i % 7) - 3) * 10) : sy(p.y);
+      var color = team ? cT : (broadOf(p.s.positionGroup) === "forwards" ? cF : cB);
+      var c = el("circle", { cx: px, cy: py, r: rad(p.size), fill: color, "fill-opacity": 0.82, stroke: surface, "stroke-width": 1.5, class: "rm-dot" });
+      c.addEventListener("mouseenter", function () { showTip(p, px, py, res); c.setAttribute("r", rad(p.size) + 2); });
+      c.addEventListener("mouseleave", function () { tip.style.opacity = 0; c.setAttribute("r", rad(p.size)); });
+      svg.appendChild(c);
+      if (team) {
+        var t = el("text", { x: px, y: py - rad(p.size) - 4, fill: cssv("--ink-2"), "font-size": 10.5, "text-anchor": "middle" });
+        t.textContent = p.s.label; svg.appendChild(t);
+      }
+    });
+
+    // axis titles
+    var xt2 = el("text", { x: m.l + pw / 2, y: H - 12, fill: cssv("--ink"), "font-size": 12.5, "font-weight": 600, "text-anchor": "middle" });
+    xt2.textContent = axisLabel(def.xMetric, pctX) + (def.axisFlips.x ? " ↺" : ""); svg.appendChild(xt2);
+    if (!strip) {
+      var yt2 = el("text", { x: 16, y: m.t + ph / 2, fill: cssv("--ink"), "font-size": 12.5, "font-weight": 600, "text-anchor": "middle", transform: "rotate(-90 16 " + (m.t + ph / 2) + ")" });
+      yt2.textContent = axisLabel(def.yMetric, pctY) + (def.axisFlips.y ? " ↺" : ""); svg.appendChild(yt2);
+    }
+
+    buildLegend(res, def);
+    return svg;
+  }
+
+  function showTip(p, px, py, res) {
+    var def = res.def, lines = "<div class='n'>" + escapeHtml(p.s.label) + "</div>";
+    var sub = res.def.scope === "TEAM_TEST" ? "" : (GROUP_LABEL[p.s.positionGroup] || "");
+    var unit = res.usePct ? "pctl" : "";
+    lines += "<div class='m'>" + escapeHtml(METRIC[def.xMetric].label) + ": " + fmt(p.x) + " " + unit + "</div>";
+    if (def.chartType !== "strip") lines += "<div class='m'>" + escapeHtml(METRIC[def.yMetric].label) + ": " + fmt(p.y) + " " + unit + "</div>";
+    if (p.size != null) lines += "<div class='m'>" + escapeHtml(METRIC[def.sizeMetric].label) + ": " + fmt(p.size) + "</div>";
+    if (sub) lines += "<div class='m'>" + escapeHtml(sub) + "</div>";
+    tip.innerHTML = lines;
+    var rect = plot.getBoundingClientRect(), svg = plot.querySelector("svg"), sr = svg.getBoundingClientRect();
+    var scale = sr.width / 780;
+    tip.style.left = (px * scale + (sr.left - rect.left)) + "px";
+    tip.style.top = (py * scale + (sr.top - rect.top)) + "px";
+    tip.style.opacity = 1;
+  }
+
+  function buildLegend(res, def) {
+    var legend = document.getElementById("rm-legend");
+    if (res.def.scope === "TEAM_TEST") {
+      legend.appendChild(legItem("--team", "Test squad"));
+    } else {
+      legend.appendChild(legItem("--forwards", "Forwards"));
+      legend.appendChild(legItem("--backs", "Backs"));
+    }
+    if (def.sizeMetric && isAvailable(def.sizeMetric)) {
+      var s = document.createElement("span"); s.className = "li";
+      s.textContent = "○ size = " + METRIC[def.sizeMetric].label; legend.appendChild(s);
+    }
+    if (def.benchmarkOverlay && def.benchmarkOverlay !== "none") {
+      var b = document.createElement("span"); b.className = "li";
+      var sw = document.createElement("span"); sw.className = "rm-swatch bench";
+      b.appendChild(sw);
+      b.appendChild(document.createTextNode(def.benchmarkOverlay === "twelveSquadMedian" ? "12-squad median" : "Test median"));
+      legend.appendChild(b);
+    }
+  }
+  function legItem(varName, label) {
+    var s = document.createElement("span"); s.className = "li";
+    var sw = document.createElement("span"); sw.className = "rm-swatch"; sw.style.background = cssv(varName);
+    s.appendChild(sw); s.appendChild(document.createTextNode(label)); return s;
+  }
+
+  /* ------------------------------ RADAR (team-aggregated) ------------------------------ */
+  function drawRadar(res) {
+    var def = res.def, mets = def.categoryMetrics;
+    // aggregate per team: mean of each metric across the team's players (raw)
+    var byTeam = {};
+    res.cohort.subjects.forEach(function (s) { (byTeam[s.teamId] = byTeam[s.teamId] || []).push(s.subjectId); });
+    var teamLabel = {}; res.cohort.teams.forEach(function (t) { teamLabel[t.id] = t.label; });
+    var teams = Object.keys(byTeam);
+    function teamVal(team, metricId) {
+      var raw = res.cohort.values[metricId] ? res.cohort.values[metricId].raw : {};
+      var vs = byTeam[team].map(function (id) { return raw[id]; }).filter(function (v) { return v != null; });
+      return vs.length ? vs.reduce(function (a, b) { return a + b; }, 0) / vs.length : null;
+    }
+    // per-axis max for scaling
+    var axisMax = mets.map(function (mid) {
+      var vals = teams.map(function (t) { return teamVal(t, mid); }).filter(function (v) { return v != null; });
+      return vals.length ? Math.max.apply(null, vals) : 1;
+    });
+    var medianPoly = mets.map(function (mid, i) {
+      return median(teams.map(function (t) { return teamVal(t, mid); }).filter(function (v) { return v != null; })) || 0;
+    });
+    res.pointsShown = teams.length;
+
+    var W = 620, H = 560, cx = W / 2, cy = H / 2 + 6, R = 190, n = mets.length;
+    var svg = svgEl(W, H);
+    var grid = cssv("--grid"), muted = cssv("--muted"), ink2 = cssv("--ink-2");
+    function pt(i, frac) {
+      var ang = -Math.PI / 2 + i / n * Math.PI * 2;
+      return [cx + Math.cos(ang) * R * frac, cy + Math.sin(ang) * R * frac];
+    }
+    [0.25, 0.5, 0.75, 1].forEach(function (f) {
+      var d = "";
+      for (var i = 0; i < n; i++) { var p = pt(i, f); d += (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }
+      svg.appendChild(el("path", { d: d + "Z", fill: "none", stroke: grid, "stroke-width": 1 }));
+    });
+    for (var i = 0; i < n; i++) {
+      var p = pt(i, 1);
+      svg.appendChild(el("line", { x1: cx, y1: cy, x2: p[0], y2: p[1], stroke: grid, "stroke-width": 1 }));
+      var lp = pt(i, 1.14), lab = el("text", { x: lp[0], y: lp[1], fill: ink2, "font-size": 10.5, "text-anchor": lp[0] < cx - 10 ? "end" : lp[0] > cx + 10 ? "start" : "middle" });
+      lab.textContent = METRIC[mets[i]].label; svg.appendChild(lab);
+    }
+    // faint team polygons
+    var cT = cssv("--team");
+    teams.forEach(function (t) {
+      var d = "";
+      for (var i = 0; i < n; i++) { var v = teamVal(t, mets[i]); var f = axisMax[i] ? (v || 0) / axisMax[i] : 0; var p = pt(i, f); d += (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }
+      svg.appendChild(el("path", { d: d + "Z", fill: "none", stroke: cT, "stroke-width": 1, "stroke-opacity": 0.22 }));
+    });
+    // median polygon (bold)
+    var bench = cssv("--bench"), dM = "";
+    for (var i = 0; i < n; i++) { var f = axisMax[i] ? medianPoly[i] / axisMax[i] : 0; var p = pt(i, f); dM += (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }
+    svg.appendChild(el("path", { d: dM + "Z", fill: cssv("--accent-soft"), stroke: cssv("--accent"), "stroke-width": 2 }));
+
+    var legend = document.getElementById("rm-legend");
+    legend.appendChild(legItem("--accent", teams.length + "-squad median"));
+    var s = document.createElement("span"); s.className = "li"; s.style.color = ink2;
+    var sw = document.createElement("span"); sw.className = "rm-swatch"; sw.style.background = cT; sw.style.opacity = .35;
+    s.appendChild(sw); s.appendChild(document.createTextNode("individual squads (each = mean of its players)")); legend.appendChild(s);
+    return svg;
+  }
+
+  /* ------------------------------ STACKED BAR ------------------------------ */
+  function drawBars(res) {
+    var def = res.def, segs = def.stackMetrics;
+    var W = 780, H = 440, m = { t: 16, r: 20, b: 64, l: 56 };
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    var subs = res.cohort.subjects;
+    var rows = subs.map(function (s) {
+      var total = 0, parts = segs.map(function (mid) { var v = (res.cohort.values[mid] ? res.cohort.values[mid].raw : {})[s.subjectId] || 0; total += v; return v; });
+      return { label: s.label, parts: parts, total: total };
+    }).filter(function (r) { return r.total > 0; });
+    res.pointsShown = rows.length;
+    var svg = svgEl(W, H);
+    if (!rows.length) return svg;
+    var max = Math.max.apply(null, rows.map(function (r) { return r.total; }));
+    var bw = pw / rows.length * 0.62, gap = pw / rows.length;
+    var colors = ["--backs", "--forwards"];
+    rows.forEach(function (r, i) {
+      var x = m.l + i * gap + (gap - bw) / 2, yb = m.t + ph, acc = 0;
+      r.parts.forEach(function (v, k) {
+        var h = v / max * ph; acc += h;
+        svg.appendChild(el("rect", { x: x, y: yb - acc + 2, width: bw, height: Math.max(0, h - 2), fill: cssv(colors[k % 2]), rx: 2 }));
+      });
+      var lb = el("text", { x: x + bw / 2, y: yb + 16, fill: cssv("--muted"), "font-size": 10, "text-anchor": "end", transform: "rotate(-40 " + (x + bw / 2) + " " + (yb + 16) + ")" });
+      lb.textContent = r.label; svg.appendChild(lb);
+    });
+    var legend = document.getElementById("rm-legend");
+    segs.forEach(function (mid, k) { legend.appendChild(legItem(colors[k % 2], METRIC[mid].label)); });
+    return svg;
+  }
+
+  /* ------------------------------ controls ------------------------------ */
+  function opt(value, label, disabled, title) {
+    var o = document.createElement("option");
+    o.value = value; o.textContent = label; if (disabled) o.disabled = true; if (title) o.title = title;
+    return o;
+  }
+  function metricSelect(current, onChange, includeNone, scope) {
+    var sel = document.createElement("select");
+    if (includeNone) sel.appendChild(opt("", "— none —", false));
+    metricsForScope(scope).forEach(function (m) {
+      var paid = m.availability === "PAID_UNAVAILABLE";
+      var tagged = m.label + (paid ? "  🔒 paid" : m.availability === "DERIVE" ? "  · derived" : "");
+      sel.appendChild(opt(m.id, tagged, paid, paid ? "Requires a paid data provider (Opta/Sportradar) — not yet available." : ""));
+    });
+    sel.value = current || "";
+    sel.addEventListener("change", function () { onChange(sel.value || null); });
+    return sel;
+  }
+  function field(label, control) {
+    var f = document.createElement("div"); f.className = "rm-field";
+    var l = document.createElement("label"); l.textContent = label;
+    f.appendChild(l); f.appendChild(control); return f;
+  }
+
+  function buildRail() {
+    var rail = document.getElementById("rm-rail");
+    rail.innerHTML = "";
+    var def = state;
+
+    // preset
+    var presetSel = document.createElement("select");
+    var groups = [["Player & position (Part 1)", "P1"], ["Team match analysis (Part 2)", "P2"], ["Saved", "user"]];
+    groups.forEach(function (g) {
+      var og = document.createElement("optgroup"); og.label = g[0];
+      DATA.presets.filter(function (p) { return (p.specRef || "").indexOf(g[1]) === 0 || (g[1] === "user" && (p.specRef === "user" || !p.specRef)); }).forEach(function (p) {
+        og.appendChild(opt(p.id, (p.specRef ? p.specRef + " · " : "") + p.name));
+      });
+      if (og.children.length) presetSel.appendChild(og);
+    });
+    presetSel.value = activePreset ? activePreset.id : "";
+    presetSel.addEventListener("change", function () {
+      var p = DATA.presets.find(function (x) { return x.id === presetSel.value; });
+      if (p) { activePreset = p; state = clone(p.definition); buildRail(); render(); }
+    });
+    rail.appendChild(field("Preset", presetSel));
+
+    // scope
+    var scope = document.createElement("div"); scope.className = "rm-seg";
+    [["PLAYER_CLUB", "Players"], ["TEAM_TEST", "Teams"]].forEach(function (s) {
+      var b = document.createElement("button"); b.textContent = s[1];
+      b.setAttribute("aria-pressed", def.scope === s[0]);
+      b.addEventListener("click", function () { switchScope(s[0]); });
+      scope.appendChild(b);
+    });
+    var sg = document.createElement("div"); sg.className = "rm-field";
+    var sl = document.createElement("label"); sl.textContent = "Scope"; sg.appendChild(sl); sg.appendChild(scope);
+    rail.appendChild(sg);
+
+    // competition
+    var comps = def.scope === "PLAYER_CLUB" ? ["URC", "SUPER_RUGBY"] : ["NATIONS_CHAMPIONSHIP"];
+    var compSel = document.createElement("select");
+    comps.forEach(function (c) { compSel.appendChild(opt(c, COMP_LABEL[c])); });
+    compSel.value = def.competition;
+    compSel.addEventListener("change", function () {
+      def.competition = compSel.value;
+      def.season = def.scope === "PLAYER_CLUB" ? "2024-25" : "2025";
+      activePreset = null; render();
+    });
+    rail.appendChild(field("Competition", compSel));
+
+    // axes
+    rail.appendChild(field("X axis", metricSelect(def.xMetric, function (v) { def.xMetric = v || def.xMetric; activePreset = null; render(); }, false, def.scope)));
+    rail.appendChild(field("Y axis", metricSelect(def.yMetric, function (v) { def.yMetric = v; activePreset = null; render(); }, true, def.scope)));
+    rail.appendChild(field("Marker size", metricSelect(def.sizeMetric, function (v) { def.sizeMetric = v; activePreset = null; render(); }, true, def.scope)));
+
+    // percentile toggle
+    var pctWrap = document.createElement("div"); pctWrap.className = "rm-toggle";
+    var pctLbl = document.createElement("span"); pctLbl.textContent = "Positional percentile";
+    var pctBtn = document.createElement("button"); pctBtn.className = "rm-switch"; pctBtn.setAttribute("aria-pressed", def.percentileMode === "positional");
+    pctBtn.setAttribute("aria-label", "Toggle positional percentile");
+    pctBtn.addEventListener("click", function () { def.percentileMode = def.percentileMode === "positional" ? "raw" : "positional"; activePreset = null; buildRail(); render(); });
+    pctWrap.appendChild(pctLbl); pctWrap.appendChild(pctBtn);
+    var pg = document.createElement("div"); pg.className = "rm-field";
+    var pgl = document.createElement("label"); pgl.textContent = "Value mode"; pg.appendChild(pgl); pg.appendChild(pctWrap);
+    rail.appendChild(pg);
+
+    // benchmark
+    var benchSel = document.createElement("select");
+    [["none", "None"], ["twelveSquadMedian", "12-squad median"], ["testMedian", "Test median"]].forEach(function (b) { benchSel.appendChild(opt(b[0], b[1])); });
+    benchSel.value = def.benchmarkOverlay || "none";
+    benchSel.addEventListener("change", function () { def.benchmarkOverlay = benchSel.value; activePreset = null; render(); });
+    rail.appendChild(field("Benchmark overlay", benchSel));
+
+    // position filter (players only)
+    if (def.scope === "PLAYER_CLUB") {
+      var chips = document.createElement("div"); chips.className = "rm-chips";
+      def.positionFilter = def.positionFilter || { groups: [], broad: null };
+      GROUP_ORDER.forEach(function (g) {
+        var c = document.createElement("button"); c.className = "rm-chip"; c.textContent = GROUP_LABEL[g];
+        var on = def.positionFilter.groups.indexOf(g) >= 0;
+        c.setAttribute("aria-pressed", on);
+        c.addEventListener("click", function () {
+          var idx = def.positionFilter.groups.indexOf(g);
+          if (idx >= 0) def.positionFilter.groups.splice(idx, 1); else def.positionFilter.groups.push(g);
+          def.positionFilter.broad = null; activePreset = null; buildRail(); render();
+        });
+        chips.appendChild(c);
+      });
+      var fg = document.createElement("div"); fg.className = "rm-field";
+      var fgl = document.createElement("label"); fgl.textContent = "Position filter"; fg.appendChild(fgl); fg.appendChild(chips);
+      rail.appendChild(fg);
+    }
+
+    // axis flips
+    var flips = document.createElement("div"); flips.className = "rm-flips";
+    [["x", "Flip X"], ["y", "Flip Y"]].forEach(function (f) {
+      var lab = document.createElement("label");
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!(def.axisFlips && def.axisFlips[f[0]]);
+      cb.addEventListener("change", function () { def.axisFlips = def.axisFlips || { x: false, y: false }; def.axisFlips[f[0]] = cb.checked; activePreset = null; render(); });
+      lab.appendChild(cb); lab.appendChild(document.createTextNode(f[1])); flips.appendChild(lab);
+    });
+    var flg = document.createElement("div"); flg.className = "rm-field";
+    var fll = document.createElement("label"); fll.textContent = "Axis orientation"; flg.appendChild(fll); flg.appendChild(flips);
+    rail.appendChild(flg);
+  }
+
+  function switchScope(scope) {
+    if (state.scope === scope) return;
+    var ms = metricsForScope(scope).filter(function (m) { return m.availability !== "PAID_UNAVAILABLE"; });
+    state = {
+      scope: scope, chartType: "scatter",
+      xMetric: ms[0] ? ms[0].id : "", yMetric: ms[1] ? ms[1].id : null, sizeMetric: null,
+      positionFilter: { groups: [], broad: null },
+      competition: scope === "PLAYER_CLUB" ? "URC" : "NATIONS_CHAMPIONSHIP",
+      season: scope === "PLAYER_CLUB" ? "2024-25" : "2025",
+      percentileMode: "raw", benchmarkOverlay: "none", axisFlips: { x: false, y: false },
+      categoryMetrics: [], stackMetrics: []
+    };
+    activePreset = null; buildRail(); render();
+  }
+
+  /* ------------------------------ freshness ------------------------------ */
+  function buildFreshness() {
+    var wrap = document.getElementById("rm-fresh");
+    var prov = { rugbypy: "--forwards", rugbypass: "--backs", matchCentre: "--team", derived: "--muted", paidProvider: "--bench" };
+    var byS = {};
+    DATA.freshness.forEach(function (f) { byS[f.source] = byS[f.source] || { rows: 0, newest: f.newestFetchedAt }; byS[f.source].rows += f.rowCount; if (f.newestFetchedAt > byS[f.source].newest) byS[f.source].newest = f.newestFetchedAt; });
+    Object.keys(byS).forEach(function (src) {
+      var s = document.createElement("span"); s.className = "src";
+      var d = document.createElement("span"); d.className = "rm-prov"; d.style.background = cssv(prov[src] || "--muted");
+      var date = byS[src].newest ? new Date(byS[src].newest).toISOString().slice(0, 10) : "—";
+      s.appendChild(d);
+      s.innerHTML += "<b>" + src + "</b> · " + byS[src].rows.toLocaleString() + " rows · " + date;
+      s.insertBefore(d, s.firstChild);
+      wrap.appendChild(s);
+    });
+  }
+
+  buildRail();
+  buildFreshness();
+  render();
+  window.addEventListener("resize", function () { /* svg is responsive via viewBox; tooltip recalculed on hover */ });
+})();
+</script>

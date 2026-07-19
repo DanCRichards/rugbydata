@@ -1,3 +1,5 @@
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { DuckDBInstance, type DuckDBConnection } from "@duckdb/node-api";
 
 /**
@@ -15,6 +17,9 @@ export class Db {
   ) {}
 
   static async open(path = ":memory:"): Promise<Db> {
+    // DuckDB won't create a missing parent directory — do it so a first-run
+    // `npm run seed` succeeds without manual setup.
+    if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
     const instance = await DuckDBInstance.create(path);
     const conn = await instance.connect();
     return new Db(instance, conn);

@@ -100,3 +100,29 @@ frontend (default `http://localhost:4000`).
 
 Every stored row records its source and fetch timestamp. `freshness` (API) and
 the frontend surface per-source row counts and the newest/oldest fetch times.
+
+## Deploy (GitHub Pages)
+
+`.github/workflows/deploy.yml` runs the pipeline and publishes a **self-contained
+static build of the engine** to GitHub Pages on every push:
+
+1. install → `typecheck` → `test` (quality gate: 74 tests)
+2. `npm run seed` — full deterministic cohort through the real normalization /
+   derivation pipeline
+3. `npm run etl` — real adapters, best-effort; in GitHub's runners the live
+   rugbypy / RugbyPass / match-centre feeds are unreachable, so the adapters fall
+   back to their recorded fixtures and layer any fetched rows on top of the seed
+4. `npm run build:site` — export the computed values (`scripts/export-artifact-data.mts`)
+   and inline them into `site/template.html`, emitting `site/dist/index.html`
+5. deploy `site/dist` to Pages
+
+Static hosting serves files only, so the tRPC API and DuckDB do **not** run on
+Pages — the page reads the pipeline-generated data baked in at build time and
+recomputes chart definitions client-side (identical availability gating and
+transparent-exclusion rules as the server). To run the full stack with the live
+API, use `npm run dev` locally or host the API on a Node platform.
+
+**One-time setup:** in the repo, **Settings → Pages → Build and deployment →
+Source → GitHub Actions**. The next push (or a manual *Run workflow*) publishes
+the site. Build it locally with `npm run seed && npm run build:site` then open
+`site/dist/index.html`.

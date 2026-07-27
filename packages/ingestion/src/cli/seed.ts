@@ -46,7 +46,14 @@ function parseSeedArg(): number | null {
   return n >>> 0;
 }
 
-main().catch((err) => {
-  console.error("[seed] FAILED:", err);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    // Force a clean exit once the data is durably committed: the DuckDB alpha
+    // binding can segfault during native process teardown on some runners, and
+    // process.exit(0) skips that crash-prone finalizer.
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("[seed] FAILED:", err);
+    process.exit(1);
+  });

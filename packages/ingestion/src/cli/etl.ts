@@ -37,7 +37,12 @@ async function main(): Promise<void> {
   console.log("[etl] done.");
 }
 
-main().catch((err) => {
-  console.error("[etl] FAILED:", err);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    // Force a clean exit once writes are committed — see seed.ts for why.
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("[etl] FAILED:", err);
+    process.exit(1);
+  });

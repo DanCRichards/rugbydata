@@ -5,8 +5,10 @@
  * client-side — no server, no imputation. Only FREE/DERIVE metrics have data;
  * PAID metrics export empty, exactly as the live engine gates them.
  *
- *   npx tsx scripts/export-artifact-data.mts > <out>.json
+ *   npx tsx scripts/export-artifact-data.mts [outPath]   (default site/data.json)
  */
+import { writeFileSync, mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { Repository, databasePath } from "@ruckmetrics/store";
 import { ALL_METRICS, SEED_PRESETS, metricsForScope } from "@ruckmetrics/registry";
 import { cohortRawValues, positionalPercentileValues } from "@ruckmetrics/derivation";
@@ -108,5 +110,14 @@ const payload = {
   cohorts,
 };
 
-process.stdout.write(JSON.stringify(payload));
+// Write the payload to a file (argv[2], default site/data.json) BEFORE any
+// DuckDB teardown. The @duckdb/node-api alpha binding can segfault during native
+// process teardown on some runners; writing synchronously here guarantees the
+// file is complete on disk regardless, and process.exit(0) below skips the
+// crash-prone finalizer once our work is durably done.
+const outPath = resolve(process.cwd(), process.argv[2] ?? "site/data.json");
+mkdirSync(dirname(outPath), { recursive: true });
+writeFileSync(outPath, JSON.stringify(payload));
 repo.close();
+process.stderr.write(`export-artifact-data: wrote ${outPath}\n`);
+process.exit(0);

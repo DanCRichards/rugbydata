@@ -46,15 +46,27 @@ jobs:
         run: npm test
 
       # ---- pipeline: generate the data ----
+      # The DuckDB steps run with continue-on-error: the @duckdb/node-api alpha
+      # binding can SIGSEGV during native process teardown AFTER the data is
+      # durably committed. A teardown-only crash must not fail the deploy — the
+      # plain-fs "Verify pipeline data" gate below is the real check.
       - name: Seed the store (full deterministic cohort)
         run: npm run seed
+        continue-on-error: true
 
       - name: Run ETL (real adapters, best-effort)
         # Live rugbypy/RugbyPass/match-centre feeds are generally unreachable from
         # GitHub runners, so the adapters fall back to their recorded fixtures and
-        # layer any fetched rows on top of the seed. Never fail the deploy on this.
+        # layer any fetched rows on top of the seed.
         run: npm run etl
         continue-on-error: true
+
+      - name: Export pipeline data
+        run: npm run build:data
+        continue-on-error: true
+
+      - name: Verify pipeline data (real gate — no DuckDB, cannot segfault)
+        run: npm run assert:data
 
       - name: Build static site (inline pipeline data)
         run: npm run build:site

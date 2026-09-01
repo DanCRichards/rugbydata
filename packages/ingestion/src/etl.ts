@@ -230,6 +230,31 @@ function buildDerivedValues(
   return Object.keys(out).length > 0 ? out : null;
 }
 
+/** Deterministic kit colour for a team slug (stable across runs/adapters). */
+export function teamColourSlug(slug: string): string {
+  const h = hashString(`colour:${slug}`);
+  const hue = h % 360;
+  // Keep the palette light-leaning and saturated so dark-mode dots stay visible.
+  const sat = 55 + (h >> 8) % 25; // 55–80%
+  const light = 40 + (h >> 4) % 20; // 40–60%
+  return hslToHex(hue, sat, light);
+}
+
+/** Convert an HSL triple to a #RRGGBB string (clamped inputs). */
+function hslToHex(h: number, s: number, l: number): string {
+  const sat = s / 100;
+  const lig = l / 100;
+  const c = (1 - Math.abs(2 * lig - 1)) * sat;
+  const hh = ((h % 360) + 360) % 360 / 60;
+  const x = c * (1 - Math.abs((hh % 2) - 1));
+  const [r1, g1, b1] =
+    hh < 1 ? [c, x, 0] : hh < 2 ? [x, c, 0] : hh < 3 ? [0, c, x] : hh < 4 ? [0, x, c] : hh < 5 ? [x, 0, c] : [c, 0, x];
+  const m = lig - c / 2;
+  const toHex = (v: number): string =>
+    Math.round((v + m) * 255).toString(16).padStart(2, "0");
+  return `#${toHex(r1)}${toHex(g1)}${toHex(b1)}`;
+}
+
 function collectEntities(
   c: RawContribution,
   query: FetchQuery,
@@ -244,6 +269,7 @@ function collectEntities(
         name: deslug(teamId),
         competition: query.competition,
         isNational: isNationalCompetition(query.competition),
+        colours: [teamColourSlug(teamId)],
       });
     }
     if (!playerIndex.has(c.subjectId) && c.position) {
@@ -261,6 +287,7 @@ function collectEntities(
         name: deslug(c.subjectId),
         competition: query.competition,
         isNational: isNationalCompetition(query.competition),
+        colours: [teamColourSlug(c.subjectId)],
       });
     }
   }

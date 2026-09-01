@@ -12,8 +12,14 @@ CREATE TABLE IF NOT EXISTS teams (
   id VARCHAR PRIMARY KEY,
   name VARCHAR NOT NULL,
   competition VARCHAR NOT NULL,
-  is_national BOOLEAN NOT NULL DEFAULT false
+  is_national BOOLEAN NOT NULL DEFAULT false,
+  colours JSON NOT NULL DEFAULT '["#000000"]'
 );
+
+-- Idempotent migration for stores created before team colours existed.
+-- DuckDB cannot add a constraint-bearing column, so legacy rows may be NULL;
+-- readers coalesce NULL colours to the neutral defaults.
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS colours JSON;
 
 CREATE TABLE IF NOT EXISTS players (
   id VARCHAR PRIMARY KEY,

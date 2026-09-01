@@ -45,8 +45,8 @@ beforeEach(async () => {
   repo = await Repository.open(":memory:");
 
   const teams: Team[] = [
-    { id: "leinster", name: "Leinster", competition: "URC", isNational: false },
-    { id: "munster", name: "Munster", competition: "URC", isNational: false },
+    { id: "leinster", name: "Leinster", competition: "URC", isNational: false, colours: ["#007749"] },
+    { id: "munster", name: "Munster", competition: "URC", isNational: false, colours: ["#E32632"] },
   ];
   const players: Player[] = [
     { id: "doris", name: "Doris", teamId: "leinster", position: "8" }, // looseForwards
@@ -68,9 +68,9 @@ beforeEach(async () => {
   ]);
 
   const teamRows: Team[] = [
-    { id: "ire", name: "Ireland", competition: "NATIONS_CHAMPIONSHIP", isNational: true },
-    { id: "nzl", name: "New Zealand", competition: "NATIONS_CHAMPIONSHIP", isNational: true },
-    { id: "fra", name: "France", competition: "NATIONS_CHAMPIONSHIP", isNational: true },
+    { id: "ire", name: "Ireland", competition: "NATIONS_CHAMPIONSHIP", isNational: true, colours: ["#0F7027"] },
+    { id: "nzl", name: "New Zealand", competition: "NATIONS_CHAMPIONSHIP", isNational: true, colours: ["#000000"] },
+    { id: "fra", name: "France", competition: "NATIONS_CHAMPIONSHIP", isNational: true, colours: ["#1A3C8B"] },
   ];
   await repo.upsertTeams(teamRows);
   await repo.upsertRecords([
@@ -114,6 +114,15 @@ describe("computeChart — scatter", () => {
     expect(res.benchmark!.x).toBe(10); // median(8,12,10)
     expect(res.benchmark!.y).toBe(10); // median(10,8,12)
     expect(res.benchmark!.label).toContain("Test Median");
+  });
+
+  it("carries each team's kit colour onto its points", async () => {
+    const preset = getPreset("p2-turnover-battle")!; // TEAM_TEST scatter
+    const res = await computeChart(repo, preset.definition);
+    const ire = res.points.find((p) => p.subjectId === "ire")!;
+    const fra = res.points.find((p) => p.subjectId === "fra")!;
+    expect(ire.colours).toEqual(["#0F7027"]);
+    expect(fra.colours).toEqual(["#1A3C8B"]);
   });
 });
 

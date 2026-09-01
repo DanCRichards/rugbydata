@@ -57,11 +57,12 @@ export class Repository {
 
   async upsertTeams(teams: Team[]): Promise<void> {
     for (const t of teams) {
-      await this.db.exec("INSERT OR REPLACE INTO teams VALUES ($1,$2,$3,$4)", [
+      await this.db.exec("INSERT OR REPLACE INTO teams VALUES ($1,$2,$3,$4,$5)", [
         t.id,
         t.name,
         t.competition,
         t.isNational,
+        JSON.stringify(t.colours),
       ]);
     }
   }
@@ -147,6 +148,7 @@ export class Repository {
           position,
           positionGroup,
           matchCount: matchesBySubject.get(subjectId)!.size,
+          colours: teamById.get(p?.teamId ?? "")?.colours ?? ["#000000"],
         });
       } else {
         const t = teamById.get(subjectId);
@@ -157,6 +159,7 @@ export class Repository {
           position: null,
           positionGroup: null,
           matchCount: matchesBySubject.get(subjectId)!.size,
+          colours: t?.colours ?? ["#000000"],
         });
       }
     }
@@ -182,12 +185,14 @@ export class Repository {
       name: string;
       competition: string;
       is_national: boolean;
-    }>("SELECT id, name, competition, is_national FROM teams");
+      colours: string | null;
+    }>("SELECT id, name, competition, is_national, colours FROM teams");
     return rows.map((r) => ({
       id: r.id,
       name: r.name,
       competition: r.competition as Competition,
       isNational: Boolean(r.is_national),
+      colours: r.colours ? JSON.parse(r.colours) : ["#6b6a65"],
     }));
   }
 

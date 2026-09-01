@@ -1,0 +1,90 @@
+{
+  "_comment": "Recorded rugbypy box-score output. Used as the ETL fallback when the python rugbypy package is not installed, and by the parser unit test. Raw upstream field names; the adapter maps them to registry metric ids.",
+  "PLAYER_CLUB": {
+    "URC": {
+      "2024-25": [
+        {
+          "playerId": "leinster-caelan-doris-8",
+          "teamId": "leinster",
+          "matchId": "urc-2024-25-r1-lei-mun",
+          "position": "8",
+          "minutesPlayed": 80,
+          "tackles": 14,
+          "tackleInvolvements": 16,
+          "defendersBeaten": 3,
+          "turnoversWon": 2,
+          "penaltiesConceded": 1,
+          "tryAssists": 0,
+          "triesScored": 1,
+          "metresCarried": 42,
+          "cleanBreaks": 1,
+          "kickVolume": 0
+        },
+        {
+          "playerId": "leinster-caelan-doris-8",
+          "teamId": "leinster",
+          "matchId": "urc-2024-25-r2-lei-uls",
+          "position": "8",
+          "minutesPlayed": 72,
+          "tackles": 11,
+          "tackleInvolvements": 13,
+          "defendersBeaten": 2,
+          "turnoversWon": 1,
+          "penaltiesConceded": 0,
+          "tryAssists": 1,
+          "triesScored": 0,
+          "metresCarried": 31,
+          "cleanBreaks": 0,
+          "kickVolume": 1
+        },
+        {
+          "playerId": "leinster-jamison-gibson-park-9",
+          "teamId": "leinster",
+          "matchId": "urc-2024-25-r1-lei-mun",
+          "position": "9",
+          "minutesPlayed": 68,
+          "tackles": 6,
+          "tackleInvolvements": 7,
+          "defendersBeaten": 1,
+          "turnoversWon": 0,
+          "penaltiesConceded": 1,
+          "tryAssists": 2,
+          "triesScored": 0,
+          "metresCarried": 24,
+          "cleanBreaks": 1,
+          "kickVolume": 18
+        }
+      ]
+    }
+  },
+  "TEAM_TEST": {
+    "NATIONS_CHAMPIONSHIP": {
+      "2025": [
+        {
+          "teamId": "ireland",
+          "matchId": "nc-2025-r1-ire-fra",
+          "minutesPlayed": 80,
+          "turnoversWon": 9,
+          "penaltiesConceded": 8,
+          "tacklesMade": 168,
+          "tackleCompletionPct": 88.5,
+          "turnoversLost": 12,
+          "teamRucks": 96,
+          "carries": 112
+        },
+        {
+          "teamId": "france",
+          "matchId": "nc-2025-r1-ire-fra",
+          "minutesPlayed": 80,
+          "turnoversWon": 11,
+          "penaltiesConceded": 11,
+          "tacklesMade": 181,
+          "tackleCompletionPct": 86.2,
+          "turnoversLost": 14,
+          "teamRucks": 88,
+          "carries": 104
+        }
+      ]
+    }
+  }
+}

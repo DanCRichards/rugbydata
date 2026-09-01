@@ -1,0 +1,45 @@
+{
+  "_comment": "Recorded official match-centre set-piece feed. Player rows carry lineout takes/steals; team rows carry own scrum & lineout retention. Adapter maps to matchCentre-sourced metric ids.",
+  "PLAYER_CLUB": {
+    "URC": {
+      "2024-25": [
+        {
+          "playerId": "leinster-caelan-doris-8",
+          "teamId": "leinster",
+          "matchId": "urc-2024-25-r1-lei-mun",
+          "position": "8",
+          "minutesPlayed": 80,
+          "lineoutTakes": 4,
+          "oppLineoutsStolen": 1
+        },
+        {
+          "playerId": "leinster-caelan-doris-8",
+          "teamId": "leinster",
+          "matchId": "urc-2024-25-r2-lei-uls",
+          "position": "8",
+          "minutesPlayed": 72,
+          "lineoutTakes": 3,
+          "oppLineoutsStolen": 0
+        }
+      ]
+    }
+  },
+  "TEAM_TEST": {
+    "NATIONS_CHAMPIONSHIP": {
+      "2025": [
+        {
+          "teamId": "ireland",
+          "matchId": "nc-2025-r1-ire-fra",
+          "scrumWinPctOwn": 96.0,
+          "lineoutWinPctOwn": 91.5
+        },
+        {
+          "teamId": "france",
+          "matchId": "nc-2025-r1-ire-fra",
+          "scrumWinPctOwn": 92.5,
+          "lineoutWinPctOwn": 88.0
+        }
+      ]
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ChartPoint, ComputeChartResponse, Scope } from "@ruckmetrics/contracts";
-import { colorFor, formatValue } from "../domain";
+import { colorFor, formatValue, teamColourFor } from "../domain";
 import { formatTick, linearScale, niceDomain, ticks } from "../scale";
 
 interface Props {
@@ -51,13 +51,14 @@ export function StripChart({ response, scope }: Props) {
           // deterministic jitter around the axis
           const cy = AXIS_Y - 12 - (i % 6) * 14;
           const key = scope === "PLAYER_CLUB" ? p.positionGroup ?? "unknown" : p.teamId;
+          const fill = scope === "TEAM_TEST" ? teamColourFor(p.colours) : colorFor(key, keys);
           return (
             <circle
               key={p.subjectId}
               cx={cx}
               cy={cy}
               r={6}
-              fill={colorFor(key, keys)}
+              fill={fill}
               className="dot"
               onMouseEnter={() => setHover({ p, x: cx, y: cy })}
               onMouseLeave={() => setHover(null)}

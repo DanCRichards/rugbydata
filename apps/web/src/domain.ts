@@ -15,6 +15,7 @@ import type {
   PercentileMode,
   PositionGroup,
   Scope,
+  TeamColours,
 } from "@ruckmetrics/contracts";
 
 export const SCOPES: readonly { value: Scope; label: string }[] = [
@@ -113,6 +114,11 @@ export const PALETTE: readonly string[] = [
 export function colorFor(key: string, keys: string[]): string {
   const idx = keys.indexOf(key);
   return PALETTE[(idx < 0 ? 0 : idx) % PALETTE.length]!;
+}
+
+/** Primary kit colour for a team, falling back to a neutral when absent. */
+export function teamColourFor(colours: TeamColours | undefined): string {
+  return colours && colours.length > 0 ? colours[0]! : "#6b6a65";
 }
 
 export function positionGroupLabel(g: PositionGroup | null): string {

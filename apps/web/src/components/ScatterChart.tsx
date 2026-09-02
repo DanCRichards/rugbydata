@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ChartPoint, ComputeChartResponse, Scope } from "@ruckmetrics/contracts";
-import { colorFor, formatValue, positionGroupLabel } from "../domain";
+import { colorFor, formatValue, positionGroupLabel, teamColourFor } from "../domain";
 import { formatTick, linearScale, niceDomain, ticks } from "../scale";
 
 interface Props {
@@ -55,6 +55,13 @@ export function ScatterChart({ response, scope }: Props) {
     hasSize && p.size !== null ? rScale(p.size) : 6;
 
   const keys = Array.from(new Set(usable.map((p) => keyOf(p, scope)))).sort();
+
+  // Colour per legend key: team scope uses each team's kit colours; player
+  // scope keeps the position-group palette.
+  const colourOf = (key: string): string =>
+    scope === "TEAM_TEST"
+      ? teamColourFor(usable.find((p) => p.teamId === key)?.colours)
+      : colorFor(key, keys);
 
   const xTicks = ticks(xMin, xMax, 6);
   const yTicks = ticks(yMin, yMax, 6);
@@ -125,7 +132,7 @@ export function ScatterChart({ response, scope }: Props) {
               cx={cx}
               cy={cy}
               r={radiusOf(p)}
-              fill={colorFor(keyOf(p, scope), keys)}
+              fill={colourOf(keyOf(p, scope))}
               className="dot"
               onMouseEnter={() => setHover({ point: p, cx, cy })}
               onMouseLeave={() => setHover(null)}
@@ -180,17 +187,19 @@ export function ScatterChart({ response, scope }: Props) {
         </div>
       )}
 
-      <Legend keys={keys} scope={scope} sizeLabel={hasSize ? sizeAxis?.label ?? null : null} />
+      <Legend keys={keys} colourOf={colourOf} scope={scope} sizeLabel={hasSize ? sizeAxis?.label ?? null : null} />
     </div>
   );
 }
 
 function Legend({
   keys,
+  colourOf,
   scope,
   sizeLabel,
 }: {
   keys: string[];
+  colourOf: (key: string) => string;
   scope: Scope;
   sizeLabel: string | null;
 }) {
@@ -198,7 +207,7 @@ function Legend({
     <div className="legend">
       {keys.map((k) => (
         <span key={k} className="legend__item">
-          <span className="legend__swatch" style={{ background: colorFor(k, keys) }} />
+          <span className="legend__swatch" style={{ background: colourOf(k) }} />
           {scope === "PLAYER_CLUB" ? positionGroupLabel(k === "unknown" ? null : (k as never)) : k}
         </span>
       ))}

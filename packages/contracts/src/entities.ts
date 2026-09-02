@@ -102,11 +102,28 @@ export const Player = z.object({
 });
 export type Player = z.infer<typeof Player>;
 
+/**
+ * A CSS colour (e.g. "#123456") as packed into a kit/team colour list.
+ * Stored loosely as hex so any consumer can drop it straight into SVG/fill.
+ */
+export const TeamColour = z.string().regex(/^#[0-9a-fA-F]{6}$/, "colour must be #RRGGBB");
+export type TeamColour = z.infer<typeof TeamColour>;
+
+/**
+ * A team's kit colours, ordered primary-first. The first entry is used as the
+ * point/marker colour wherever a single colour is needed; extra entries are
+ * available for multi-colour kit rendering.
+ */
+export const TeamColours = z.array(TeamColour).min(1).default(["#000000"]);
+export type TeamColours = z.infer<typeof TeamColours>;
+
 export const Team = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   competition: Competition,
   /** True for national test squads (used by the 12-squad / test-median benchmarks). */
   isNational: z.boolean().default(false),
+  /** Kit colours used to tint this team's points on charts. */
+  colours: TeamColours,
 });
 export type Team = z.infer<typeof Team>;

@@ -4,7 +4,7 @@ import { Repository } from "../src/repository.js";
 
 let repo: Repository;
 
-const team: Team = { id: "leinster", name: "Leinster", competition: "URC", isNational: false };
+const team: Team = { id: "leinster", name: "Leinster", competition: "URC", isNational: false, colours: ["#007749"] };
 const player: Player = { id: "p1", name: "Caelan Doris", teamId: "leinster", position: "8" };
 
 function record(matchId: string, values: Record<string, number>): MatchStatRecord {
@@ -57,6 +57,16 @@ describe("Repository", () => {
     await repo.upsertRecords([record("m1", { p_tacklesMade: 5 })]);
     const empty = await repo.getCohort({ scope: "PLAYER_CLUB", competition: "SUPER_RUGBY", season: "2024-25" });
     expect(empty.records).toHaveLength(0);
+  });
+
+  it("persists and returns team kit colours on subjects", async () => {
+    await repo.upsertTeams([team]);
+    await repo.upsertPlayers([player]);
+    await repo.upsertRecords([record("m1", { p_tacklesMade: 5 })]);
+    const all = await repo.allTeams();
+    expect(all[0]!.colours).toEqual(["#007749"]);
+    const cohort = await repo.getCohort({ scope: "PLAYER_CLUB", competition: "URC", season: "2024-25" });
+    expect(cohort.subjects[0]!.colours).toEqual(["#007749"]);
   });
 
   it("reports data freshness by source and scope", async () => {

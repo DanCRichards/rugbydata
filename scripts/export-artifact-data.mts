@@ -30,7 +30,7 @@ interface CohortExport {
     positionGroup: string | null;
     matchCount: number;
   }[];
-  teams: { id: string; label: string }[];
+  teams: { id: string; label: string; colours: string[] }[];
   // per metric: { raw: {subjectId:value}, pct: {subjectId:value} }
   values: Record<string, { raw: Record<string, number>; pct: Record<string, number> }>;
 }
@@ -44,6 +44,7 @@ const cohortDefs: { scope: Scope; competition: Competition; season: string }[] =
 const cohorts: CohortExport[] = [];
 const allTeams = await repo.allTeams();
 const teamLabel = new Map(allTeams.map((t) => [t.id, t.name]));
+const teamColours = new Map(allTeams.map((t) => [t.id, t.colours]));
 
 for (const cd of cohortDefs) {
   const cohort = await repo.getCohort(cd);
@@ -88,7 +89,11 @@ for (const cd of cohortDefs) {
       positionGroup: s.positionGroup,
       matchCount: s.matchCount,
     })),
-    teams: teamIds.map((id) => ({ id, label: teamLabel.get(id) ?? id })),
+    teams: teamIds.map((id) => ({
+      id,
+      label: teamLabel.get(id) ?? id,
+      colours: teamColours.get(id) ?? ["#6b6a65"],
+    })),
     values,
   });
 }

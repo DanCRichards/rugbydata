@@ -188,6 +188,7 @@ export async function computeChart(
       label: meta?.label ?? s.subjectId,
       teamId: meta?.teamId ?? "",
       positionGroup: meta?.positionGroup ?? null,
+      colours: meta?.colours ?? ["#000000"],
       x,
       y,
       size: sizeVals?.get(s.subjectId) ?? null,
@@ -246,7 +247,7 @@ function computeBenchmark(
 function computeCategory(
   def: ChartDefinition,
   subjects: SubjectRecords[],
-  subjectMeta: Map<string, { label: string }>,
+  subjectMeta: Map<string, { label: string; colours: string[] }>,
   percentile: boolean,
   valuesFor: (m: MetricDefinition, asPct: boolean) => Map<string, number>,
   base: ComputeChartResponse,
@@ -256,12 +257,18 @@ function computeCategory(
   const valueMaps = new Map(metrics.map((m) => [m.id, valuesFor(m, percentile)]));
 
   const categorySeries: CategorySeries[] = subjects.map((s) => {
+    const meta = subjectMeta.get(s.subjectId);
     const values: Record<string, number> = {};
     for (const m of metrics) {
       const v = valueMaps.get(m.id)!.get(s.subjectId);
       if (v !== undefined) values[m.id] = v;
     }
-    return { subjectId: s.subjectId, label: subjectMeta.get(s.subjectId)?.label ?? s.subjectId, values };
+    return {
+      subjectId: s.subjectId,
+      label: meta?.label ?? s.subjectId,
+      values,
+      colours: meta?.colours ?? ["#000000"],
+    };
   });
 
   // Benchmark median per category, emitted as a synthetic series row.
@@ -275,6 +282,7 @@ function computeCategory(
       subjectId: "__benchmark__",
       label: def.benchmarkOverlay === "twelveSquadMedian" ? "12-Squad Median" : "Test Median",
       values,
+      colours: ["#6b6a65"],
     });
   }
   return { ...base, categorySeries, categoryAxes };
@@ -283,7 +291,7 @@ function computeCategory(
 function computeStacked(
   def: ChartDefinition,
   subjects: SubjectRecords[],
-  subjectMeta: Map<string, { label: string }>,
+  subjectMeta: Map<string, { label: string; colours: string[] }>,
   valuesFor: (m: MetricDefinition, asPct: boolean) => Map<string, number>,
   base: ComputeChartResponse,
 ): ComputeChartResponse {
@@ -291,6 +299,7 @@ function computeStacked(
   const stackAxes: AxisMeta[] = metrics.map((m) => axisMeta(m, false, false));
   const valueMaps = new Map(metrics.map((m) => [m.id, valuesFor(m, false)]));
   const stackSeries: StackSeries[] = subjects.map((s) => {
+    const meta = subjectMeta.get(s.subjectId);
     const segments: Record<string, number> = {};
     for (const m of metrics) {
       const v = valueMaps.get(m.id)!.get(s.subjectId);
@@ -298,8 +307,9 @@ function computeStacked(
     }
     return {
       subjectId: s.subjectId,
-      label: subjectMeta.get(s.subjectId)?.label ?? s.subjectId,
+      label: meta?.label ?? s.subjectId,
       segments,
+      colours: meta?.colours ?? ["#000000"],
     };
   });
   return { ...base, stackSeries, stackAxes };

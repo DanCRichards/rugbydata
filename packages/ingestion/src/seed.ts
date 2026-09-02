@@ -61,6 +61,40 @@ const NATIONS_TEAMS: string[] = [
   "italy",
 ];
 
+/**
+ * Kit colours (primary first) for every seeded team, keyed by the stable team
+ * slug. Kept here so the seed is the single source of truth for demo teams.
+ */
+const TEAM_COLOURS: Record<string, readonly string[]> = {
+  // URC / club
+  leinster: ["#007749"], // Leinster kit green
+  munster: ["#E32632"], // Munster kit red
+  ulster: ["#00A651"], // Ulster kit green
+  connacht: ["#0080C8"], // Connacht kit blue
+  "glasgow-warriors": ["#005EB8"], // Glasgow kit blue
+  edinburgh: ["#D50000"], // Edinburgh kit red
+  cardiff: ["#0072BC"], // Cardiff kit blue
+  ospreys: ["#000000"], // ospreys kit black
+  scarlets: ["#D41C2C"], // Scarlets kit red
+  stormers: ["#E2231C"], // Stormers kit red
+  bulls: ["#009CDE"], // Bulls kit blue
+  sharks: ["#1B1919"], // Sharks kit dark
+  // Super Rugby
+  crusaders: ["#C8102E"], // Crusaders kit red
+  blues: ["#2D3192"], // Blues kit navy
+  // Test nations
+  ireland: ["#0F7027"], // Ireland green
+  france: ["#1A3C8B"], // France blue
+  england: ["#231F20"], // England white/black
+  scotland: ["#1B4F8A"], // Scotland blue
+  wales: ["#E71C35"], // Wales red
+  "south-africa": ["#096334"], // Springboks green
+  "new-zealand": ["#000000"], // All Blacks black
+  australia: ["#FFB81C"], // Wallabies gold
+  argentina: ["#3D9BD9"], // Argentina sky blue
+  italy: ["#3E6BB5"], // Italy blue
+};
+
 const CLUB_COMP: Competition = "URC";
 const CLUB_SEASON: Season = "2024-25";
 const SR_COMP: Competition = "SUPER_RUGBY";
@@ -338,6 +372,11 @@ function buildTeamMatch(
   });
 }
 
+/** Kit colours for a team id, falling back to a neutral colour when unknown. */
+function teamColours(teamId: string): readonly string[] {
+  return TEAM_COLOURS[teamId] ?? ["#6b6a65"];
+}
+
 function buildSquad(
   ds: SeedDataset,
   rootSeed: number,
@@ -346,7 +385,13 @@ function buildSquad(
   season: Season,
   isNational: boolean,
 ): void {
-  ds.teams.push({ id: teamId, name: deslugTeam(teamId), competition, isNational });
+  ds.teams.push({
+    id: teamId,
+    name: deslugTeam(teamId),
+    competition,
+    isNational,
+    colours: [...teamColours(teamId)],
+  });
   const teamRng = new Rng(`${rootSeed}:${teamId}`);
   const squadSize = teamRng.int(16, 22);
 
@@ -373,7 +418,13 @@ function buildSquad(
 }
 
 function buildTestTeam(ds: SeedDataset, rootSeed: number, teamId: string): void {
-  ds.teams.push({ id: teamId, name: deslugTeam(teamId), competition: TEST_COMP, isNational: true });
+  ds.teams.push({
+    id: teamId,
+    name: deslugTeam(teamId),
+    competition: TEST_COMP,
+    isNational: true,
+    colours: [...teamColours(teamId)],
+  });
   const teamRng = new Rng(`${rootSeed}:testteam:${teamId}`);
   const talent = clamp(teamRng.normal(1, 0.1), 0.8, 1.25);
   const nMatches = teamRng.int(4, 6);

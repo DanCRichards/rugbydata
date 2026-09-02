@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Competition, PositionCode, PositionGroup, Scope, Season } from "./entities.js";
+import { Competition, PositionCode, PositionGroup, Scope, Season, TeamColours } from "./entities.js";
 import { MetricUnit } from "./metrics.js";
 import { ChartDefinition, ChartType, PercentileMode, Preset } from "./chart.js";
 import { FreshnessEntry } from "./records.js";
@@ -32,6 +32,8 @@ export const CohortSubject = z.object({
   position: PositionCode.nullable(),
   positionGroup: PositionGroup.nullable(),
   matchCount: z.number().int().nonnegative(),
+  /** The owning team's kit colours, so charts can tint points per team. */
+  colours: TeamColours.default(["#000000"]),
 });
 export type CohortSubject = z.infer<typeof CohortSubject>;
 
@@ -63,6 +65,8 @@ export const ChartPoint = z.object({
   label: z.string(),
   teamId: z.string(),
   positionGroup: PositionGroup.nullable(),
+  /** The subject team's kit colours (used to tint scatter/strip markers). */
+  colours: TeamColours.default(["#000000"]),
   x: z.number(),
   y: z.number().nullable(),
   size: z.number().nullable(),
@@ -83,6 +87,8 @@ export const CategorySeries = z.object({
   subjectId: z.string(),
   label: z.string(),
   values: z.record(z.string(), z.number()),
+  /** The subject team's kit colours (used when series represent teams). */
+  colours: TeamColours.default(["#000000"]),
 });
 export type CategorySeries = z.infer<typeof CategorySeries>;
 
@@ -91,6 +97,8 @@ export const StackSeries = z.object({
   subjectId: z.string(),
   label: z.string(),
   segments: z.record(z.string(), z.number()),
+  /** The subject team's kit colours (used when series represent teams). */
+  colours: TeamColours.default(["#000000"]),
 });
 export type StackSeries = z.infer<typeof StackSeries>;
 
